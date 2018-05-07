@@ -60,7 +60,7 @@ public void register(Object subscriber) {
         }
     }
 ```
-我把register这个方法主要分为三部分。第一步很简单了，获取订阅者的Class对象，这个订阅者通常就是我们写的Activity或者Fragment等等。第二步是通过我们第一步拿到的订阅者的Class对象，反射获取所有符合规则的处理事件的方法。既然要**符合规则的方法**，那么规则是什么呢？其实规则就是这些方法必须加**@subscribe**注解，参数必须有且只有一个等等。我们来看一下代码：
+我把register这个方法主要分为三部分。第一步很简单了，获取订阅者的Class对象，这个订阅者通常就是我们写的Activity或者Fragment等等。第二步是通过我们第一步拿到的订阅者的Class对象，反射获取所有符合规则的处理事件的方法。既然要 **符合规则的方法** ，那么规则是什么呢？其实规则就是这些方法必须加 **@subscribe** 注解，参数必须有且只有一个等等。我们来看一下代码：
 ```
 List<SubscriberMethod> findSubscriberMethods(Class<?> subscriberClass) {
     
@@ -115,7 +115,7 @@ private List<SubscriberMethod> findUsingInfo(Class<?> subscriberClass) {
         return getMethodsAndRelease(findState);
     }
 ```
-在** findUsingInfo**这段代码中，我们忽略细节，只看我添加注释的部分。如果添加了索引相关的配置，代码会去执行索引相关的逻辑；反之，代码执行** findUsingReflectionInSingleClass(findState);**这个函数，通过反射来获取方法集合。我们忽略索引部分，跟进** findUsingReflectionInSingleClass(findState);**这个方法看一下：
+在 **findUsingInfo** 这段代码中，我们忽略细节，只看我添加注释的部分。如果添加了索引相关的配置，代码会去执行索引相关的逻辑；反之，代码执行   **findUsingReflectionInSingleClass(findState);** 这个函数，通过反射来获取方法集合。我们忽略索引部分，跟进 **findUsingReflectionInSingleClass(findState);** 这个方法看一下：
 ```
 private void findUsingReflectionInSingleClass(FindState findState) {
         Method[] methods;
