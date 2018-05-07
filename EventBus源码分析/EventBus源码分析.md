@@ -89,7 +89,7 @@ List<SubscriberMethod> findSubscriberMethods(Class<?> subscriberClass) {
 ```
 在**findSubscriberMethods**这个方法中，主要是进行了对订阅者中我们定义的处理事件的方法的获取操作。代码逻辑其实已经比较清晰了，首先是从缓存中拿方法集合，有的话直接返回，没有的话再去获取。第二步是获取的关键，它比较复杂，我们暂时先看第三步。如果当前获取到的方法集合为空，则抛出异常。看到这里小伙伴们应该就比较熟悉了，在我们刚开始使用EventBus的时候经常会在一个Activity中调用的EventBus的register方法，但是却忘了写**@subscribe**注解的方法，运行程序会报错。那么很明显，就是这里抛出了一个异常，这个异常提醒我们，如果在订阅者中调用的register方法，就必须添加至少一个相应的处理事件的方法。如果获取到的方法集合不为空，则将之放入缓存并返回。
 
-这个**findSubscriberMethods**方法中最关键的是第二步的获取。这里有一个变量**ignoreGeneratedIndex**，**是否忽略索引**，默认值为false，也就是默认不忽略索引，走的是else中的** findUsingInfo(subscriberClass);**方法。那么问题来了，这个索引是什么，为什么我们平常使用EventBus的时候从来都没用过这个东西？其实在EventBus3.0之前是没有索引这个东西的，第二步获取方法集合走的是** findUsingReflection(subscriberClass);**这个方法。那为什么在3.0之后加上了索引呢？其实答案很简单，就是因为反射获取方法集合是比较低效的，使用反射所耗费的时间开销比较大。如果使用索引，EventBus的性能会提升一倍。具体如何在你的代码中使用EventBus的索引，可以参考 [greenrobot官网中index的介绍](http://greenrobot.org/eventbus/documentation/subscriber-index/) 。那么小伙伴们问题又来了，既然是默认不忽略索引，而我们平时使用EventBus根本没添加过索引相关的代码，那**findUsingInfo(subscriberClass);**这段代码究竟是使用什么方式来获取方法集合的呢？放代码：
+这个**findSubscriberMethods**方法中最关键的是第二步的获取。这里有一个变量 **ignoreGeneratedIndex**，是否忽略索引，默认值为false，也就是默认不忽略索引，走的是else中的 **findUsingInfo(subscriberClass);** 方法。那么问题来了，这个索引是什么，为什么我们平常使用EventBus的时候从来都没用过这个东西？其实在EventBus3.0之前是没有索引这个东西的，第二步获取方法集合走的是 **findUsingReflection(subscriberClass);** 这个方法。那为什么在3.0之后加上了索引呢？其实答案很简单，就是因为反射获取方法集合是比较低效的，使用反射所耗费的时间开销比较大。如果使用索引，EventBus的性能会提升一倍。具体如何在你的代码中使用EventBus的索引，可以参考 [greenrobot官网中index的介绍](http://greenrobot.org/eventbus/documentation/subscriber-index/) 。那么小伙伴们问题又来了，既然是默认不忽略索引，而我们平时使用EventBus根本没添加过索引相关的代码，那     **findUsingInfo(subscriberClass);** 这段代码究竟是使用什么方式来获取方法集合的呢？放代码：
 ```
 private List<SubscriberMethod> findUsingInfo(Class<?> subscriberClass) {
         FindState findState = prepareFindState();
@@ -175,7 +175,7 @@ synchronized (this) {
             }
         }
 ```
-这段代码很简单，遍历第二步获取的方法集合，调用**subscribe(subscriber, subscriberMethod);**这个方法。很明显，**subscribe(subscriber, subscriberMethod);**是最后一步的核心代码，我们跟进去看一下：
+这段代码很简单，遍历第二步获取的方法集合，调用 **subscribe(subscriber, subscriberMethod);** 这个方法。很明显，**subscribe(subscriber, subscriberMethod);** 是最后一步的核心代码，我们跟进去看一下：
 ```
 private void subscribe(Object subscriber, SubscriberMethod subscriberMethod) {
         
