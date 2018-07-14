@@ -399,7 +399,7 @@ private void postSingleEvent(Object event, PostingThreadState postingState) thro
         //事件是否具有继承性，默认为true
         if (eventInheritance) {
             
-            //查询事件所有的子类型
+            //查询事件所有的父类型
             List<Class<?>> eventTypes = lookupAllEventTypes(eventClass);
             int countTypes = eventTypes.size();
             
