@@ -114,7 +114,7 @@ android {
 * **ui** 包中创建 **activity** 和 **fragment** ，很好理解了，存放我们开发中的Activity和fragment。
 
 上面这些目录结构都是在一个新的项目开发前必须创建好的。有的同学可能看到我的[Demo](https://github.com/BlackFlagBin/KCommonProject)中在一些目录中也添加了别的一些包，比如在 **common** 包下创建了 **constant** 、 **util** 、 **entity** 等等包。其实除了之前提到的必须的目录结构，你在[Demo](https://github.com/BlackFlagBin/KCommonProject)中看到的别的包都是可选的，这个随你，只不过这些都是我个人的开发习惯。我习惯在 **common** 包下存放我项目中的常量、工具类、和数据实体类，同理，我也喜欢在 **ui** 包下存放adapter和自定义view。当然，这些都是经验之谈，我推荐你跟我采用相同的结构。我们最后来看一张图片有个更明确的概念。
-![目录结构](https://github.com/BlackFlagBin/MarkDownPicture/blob/master/kcommon/KCommonProjectIndex.png)
+![目录结构](https://github.com/BlackFlagBin/MarkDownPicture/blob/master/kcommon/KCommonProjectIndex.png?raw=true)
 
 
 #### 完成我们自定义的Application类
