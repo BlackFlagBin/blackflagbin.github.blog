@@ -108,7 +108,7 @@ Android的内存优化在我看来分为两点：避免内存泄漏、扩大内�
 
 扩大内存，为什么要扩大我们的内存呢？有时候我们实际开发中不可避免的要使用很多第三方商业的SDK，这些SDK其实有好有坏，大厂的SDK可能内存泄漏会少一些，但一些小厂的SDK质量也就不太靠谱一些。那应对这种我们无法改变的情况，最好的办法就是扩大内存。
 
-扩大内存通常有两种方法：一个是在清单文件中的Application下添加largeHeap="true"这个属性，另一个就是同一个应用开启多个进程来扩大一个应用的总内存空间。第二种方法其实就很常见了，比方说我使用过环信的SDK，环信的Service其实就是处在另外一个单独的进程中。
+扩大内存通常有两种方法：一个是在清单文件中的Application下添加largeHeap="true"这个属性，另一个就是同一个应用开启多个进程来扩大一个应用的总内存空间。第二种方法其实就很常见了，比方说我使用过个推的SDK，个推的Service其实就是处在另外一个单独的进程中。
 
 Android中的内存优化总的来说就是开源和节流，开源就是扩大内存，节流就是避免内存泄漏。
 
@@ -137,6 +137,20 @@ Binder机制主要的流程是这样的：
 * 客户端通过Binder驱动查询在ServiceManager中注册的服务。
 * ServiceManager通过Binder驱动返回服务端的代理对象。
 * 客户端拿到服务端的代理对象后即可进行进程间通信。
+
+### LruCache的原理
+LruCache的核心原理就是对LinkedHashMap的有效利用，它的内部存在一个LinkedHashMap成员变量。值得我们关注的有四个方法：构造方法、get、put、trimToSize。
+
+构造方法：在LruCache的构造方法中做了两件事，设置了maxSize、创建了一个LinkedHashMap。这里值得注意的是LruCache将LinkedHashMap的accessOrder设置为了true，accessOrder就是遍历这个LinkedHashMap的输出顺序。true代表按照访问顺序输出，false代表按添加顺序输出，因为通常都是按照添加顺序输出，所以accessOrder这个属性默认是false，但我们的LruCache需要按访问顺序输出，所以显式的将accessOrder设置为true。
+
+get方法：本质上是调用LinkedHashMap的get方法，由于我们将accessOrder设置为了true，所以每调用一次get方法，就会将我们访问的当前元素放置到这个LinkedHashMap的尾部。
+
+put方法：本质上也是调用了LinkedHashMap的put方法，由于LinkedHashMap的特性，每调用一次put方法，也会将新加入的元素放置到LinkedHashMap的尾部。添加之后会调用trimToSize方法来保证添加后的内存不超过maxSize。
+
+trimToSize方法：trimToSize方法的内部其实是开启了一个while(true)的死循环，不断的从LinkedHashMap的首部删除元素，直到删除之后的内存小于maxSize之后使用break跳出循环。
+
+其实到这里我们可以总结一下，为什么这个算法叫 **最近最少使用** 算法呢？原理很简单，我们的每次put或者get都可以看做一次访问，由于LinkedHashMap的特性，会将每次访问到的元素放置到尾部。当我们的内存达到阈值后，会触发trimToSize方法来删除LinkedHashMap首部的元素，直到当前内存小于maxSize。为什么删除首部的元素，原因很明显：我们最近经常访问的元素都会放置到尾部，那首部的元素肯定就是 **最近最少使用** 的元素了，因此当内存不足时应当优先删除这些元素。
+
 
 ### 热修复原理
 
