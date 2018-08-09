@@ -202,6 +202,12 @@ js调Android。js调Android有三种方法：
 
 ### 热修复原理
 
+### Activity启动过程
+
+### SparseArray
+
+### 大图加载
+
 ## 数据结构与算法
 
 ### 手写快排
