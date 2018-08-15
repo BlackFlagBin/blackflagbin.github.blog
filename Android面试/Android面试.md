@@ -76,7 +76,48 @@ resize方法。resize做了两件事：
 
 ### 什么情况下Java会产生死锁，如何定位、修复
 
+### sleep和wait的区别
+* sleep方法是Thread类中的静态方法，wait是Object类中的方法
+* sleep并不会释放同步锁，而wait会释放同步锁
+* sleep可以在任何地方使用，而wait只能在同步方法或者同步代码块中使用
+* sleep中必须传入时间，而wait可以传，也可以不传，不传时间的话只有notify或者notifyAll才能唤醒，传时间的话在时间之后会自动唤醒
+
+### join的用法
+join方法通常是保证线程间顺序调度的一个方法，它是Thread类中的方法。比方说在线程A中执行线程B.join()，这时线程A会进入等待状态，直到线程B执行完毕之后才会唤醒，继续执行A线程中的后续方法。
+
+join方法可以传时间参数，也可以不传参数，不传参数实际上调用的是join(0)。它的原理其实是使用了wait方法，join的原理如下：
+```
+public final synchronized void join(long millis)
+    throws InterruptedException {
+        long base = System.currentTimeMillis();
+        long now = 0;
+
+        if (millis < 0) {
+            throw new IllegalArgumentException("timeout value is negative");
+        }
+
+        if (millis == 0) {
+            while (isAlive()) {
+                wait(0);
+            }
+        } else {
+            while (isAlive()) {
+                long delay = millis - now;
+                if (delay <= 0) {
+                    break;
+                }
+                wait(delay);
+                now = System.currentTimeMillis() - base;
+            }
+        }
+    }
+```
+
+###
+
 ### Java中的线程池
+
+
 
 ### final、finally、finalize区别
 
