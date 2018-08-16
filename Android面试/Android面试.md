@@ -74,7 +74,7 @@ resize方法。resize做了两件事：
 * 将原数组扩展为原来的2倍
 * 重新计算index索引值，将原节点重新放到新的数组中。这一步可以将原先冲突的节点分散到新的桶中。
 
-### 什么情况下Java会产生死锁，如何定位、修复
+### 什么情况下Java会产生死锁，如何定位、修复，手写死锁
 
 ### sleep和wait的区别
 * sleep方法是Thread类中的静态方法，wait是Object类中的方法
@@ -115,7 +115,153 @@ public final synchronized void join(long millis)
 
 ###
 
+### volatile和synchronize的区别
+
 ### Java中的线程池
+
+### 线程通信
+
+### Java中生产者与消费者模式
+生产者消费者模式要保证的是当缓冲区满的时候生产者不再生产对象，当缓冲区空时，消费者不再消费对象。实现机制就是当缓冲区满时让生产者处于等待状态，当缓冲区为空时让消费者处于等待状态。当生产者生产了一个对象后会唤醒消费者，当消费者消费一个对象后会唤醒生产者。
+三种种实现方式：wait和notify、await和signal、BlockingQueue。
+* wait和notify
+```
+//wait和notify
+import java.util.LinkedList;
+
+public class StorageWithWaitAndNotify {
+    private final int                MAX_SIZE = 10;
+    private       LinkedList<Object> list     = new LinkedList<Object>();
+
+    public void produce() {
+        synchronized (list) {
+            while (list.size() == MAX_SIZE) {
+                System.out.println("仓库已满：生产暂停");
+                try {
+                    list.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            list.add(new Object());
+            System.out.println("生产了一个新产品，现库存为：" + list.size());
+            list.notifyAll();
+        }
+    }
+
+    public void consume() {
+        synchronized (list) {
+            while (list.size() == 0) {
+                System.out.println("库存为0：消费暂停");
+                try {
+                    list.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            list.remove();
+            System.out.println("消费了一个产品，现库存为：" + list.size());
+            list.notifyAll();
+        }
+    }
+
+
+}
+
+```
+* await和signal
+```
+import java.util.LinkedList;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+class StorageWithAwaitAndSignal {
+    private final int                MAX_SIZE = 10;
+    private       ReentrantLock      mLock    = new ReentrantLock();
+    private       Condition          mEmpty   = mLock.newCondition();
+    private       Condition          mFull    = mLock.newCondition();
+    private       LinkedList<Object> mList    = new LinkedList<Object>();
+
+    public void produce() {
+        mLock.lock();
+        while (mList.size() == MAX_SIZE) {
+            System.out.println("缓冲区满，暂停生产");
+            try {
+                mFull.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        mList.add(new Object());
+        System.out.println("生产了一个新产品，现容量为：" + mList.size());
+        mEmpty.signalAll();
+
+        mLock.unlock();
+    }
+
+    public void consume() {
+        mLock.lock();
+        while (mList.size() == 0) {
+            System.out.println("缓冲区为空，暂停消费");
+            try {
+                mEmpty.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        mList.remove();
+        System.out.println("消费了一个产品，现容量为：" + mList.size());
+        mFull.signalAll();
+
+        mLock.unlock();
+    }
+}
+
+```
+* BlockingQueue
+```
+import java.util.concurrent.LinkedBlockingQueue;
+
+public class StorageWithBlockingQueue {
+    private final int                         MAX_SIZE = 10;
+    private       LinkedBlockingQueue<Object> list     = new LinkedBlockingQueue<Object>(MAX_SIZE);
+
+    public void produce() {
+        if (list.size() == MAX_SIZE) {
+            System.out.println("缓冲区已满，暂停生产");
+        }
+
+        try {
+            list.put(new Object());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("生产了一个产品，现容量为：" + list.size());
+    }
+
+    public void consume() {
+        if (list.size() == 0) {
+            System.out.println("缓冲区为空，暂停消费");
+        }
+
+        try {
+            list.take();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("消费了一个产品，现容量为：" + list.size());
+    }
+
+}
+
+```
+
 
 
 
